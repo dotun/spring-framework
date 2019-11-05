@@ -23,6 +23,7 @@ import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+
 import javax.sql.DataSource;
 
 import org.springframework.lang.Nullable;
@@ -203,10 +204,6 @@ public class TransactionAwareDataSourceProxy extends DelegatingDataSource {
 					return true;
 				}
 			}
-			else if (method.getName().equals("getWarnings") || method.getName().equals("clearWarnings")) {
-				// Avoid creation of target Connection on pre-close cleanup (e.g. in Hibernate Session)
-				return null;
-			}
 			else if (method.getName().equals("close")) {
 				// Handle close method: only close if not within a transaction.
 				DataSourceUtils.doReleaseConnection(this.target, this.targetDataSource);
@@ -218,6 +215,10 @@ public class TransactionAwareDataSourceProxy extends DelegatingDataSource {
 			}
 
 			if (this.target == null) {
+				if (method.getName().equals("getWarnings") || method.getName().equals("clearWarnings")) {
+					// Avoid creation of target Connection on pre-close cleanup (e.g. Hibernate Session)
+					return null;
+				}
 				if (this.closed) {
 					throw new SQLException("Connection handle already closed");
 				}

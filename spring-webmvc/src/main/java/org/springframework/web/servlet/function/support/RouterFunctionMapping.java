@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.jetbrains.annotations.NotNull;
@@ -167,6 +168,8 @@ public class RouterFunctionMapping extends AbstractHandlerMapping implements Ini
 	@Nullable
 	@Override
 	protected Object getHandlerInternal(@NotNull HttpServletRequest servletRequest) throws Exception {
+		String lookupPath = getUrlPathHelper().getLookupPathForRequest(servletRequest);
+		servletRequest.setAttribute(LOOKUP_PATH, lookupPath);
 		if (this.routerFunction != null) {
 			ServerRequest request = ServerRequest.create(servletRequest, this.messageConverters);
 			servletRequest.setAttribute(RouterFunctions.REQUEST_ATTRIBUTE, request);

@@ -28,9 +28,10 @@ import io.rsocket.ConnectionSetupPayload;
 import io.rsocket.DuplexConnection;
 import io.rsocket.RSocketFactory;
 import io.rsocket.frame.decoder.PayloadDecoder;
+import io.rsocket.metadata.WellKnownMimeType;
 import io.rsocket.transport.ClientTransport;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -52,7 +53,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 /**
  * Unit tests for {@link DefaultRSocketRequesterBuilder}.
@@ -68,7 +69,7 @@ public class DefaultRSocketRequesterBuilderTests {
 	private final TestRSocketFactoryConfigurer rsocketFactoryConfigurer = new TestRSocketFactoryConfigurer();
 
 
-	@Before
+	@BeforeEach
 	public void setup() {
 		this.transport = mock(ClientTransport.class);
 		given(this.transport.connect(anyInt())).willReturn(Mono.just(this.connection));
@@ -84,7 +85,7 @@ public class DefaultRSocketRequesterBuilderTests {
 				.rsocketStrategies(strategiesConfigurer)
 				.connect(this.transport);
 
-		verifyZeroInteractions(this.transport);
+		verifyNoInteractions(this.transport);
 		assertThat(this.rsocketFactoryConfigurer.rsocketFactory()).isNull();
 	}
 
@@ -150,7 +151,7 @@ public class DefaultRSocketRequesterBuilderTests {
 	@Test
 	public void mimeTypesCannotBeChangedAtRSocketFactoryLevel() {
 		MimeType dataMimeType = MimeTypeUtils.APPLICATION_JSON;
-		MimeType metaMimeType = MetadataExtractor.ROUTING;
+		MimeType metaMimeType = MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_ROUTING.getString());
 
 		RSocketRequester requester = RSocketRequester.builder()
 				.metadataMimeType(metaMimeType)
